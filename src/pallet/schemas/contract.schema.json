@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:pallet:schema:contract:1",
+  "title": "pallet dataset contract",
+  "description": "A dataset spec as registered with `pallet describe`: who publishes the source, where, how often, under what rights, how its bytes are shaped into a table, and what is known to be wrong with it.",
+  "type": "object",
+  "required": ["pallet", "dataset", "rights", "source", "shape"],
+  "additionalProperties": false,
+  "properties": {
+    "pallet": {
+      "type": "object",
+      "required": ["spec"],
+      "additionalProperties": false,
+      "properties": {
+        "spec": {"const": 1, "description": "Spec format version."},
+        "draft": {
+          "type": "boolean",
+          "description": "True for a machine-inferred draft. `describe` refuses drafts until a person has reviewed them."
+        }
+      }
+    },
+    "dataset": {
+      "type": "object",
+      "required": ["id", "title", "description", "publisher", "cadence"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,79}$"},
+        "title": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "publisher": {"type": "string", "minLength": 1},
+        "publisher_url": {"type": "string"},
+        "homepage": {"type": "string"},
+        "index_url": {
+          "type": "string",
+          "description": "The publisher's listing page. Captured on every capture so changes to it are on record."
+        },
+        "cadence": {"type": "string", "minLength": 1},
+        "geography": {"type": "string"},
+        "time_basis": {"type": "string"},
+        "grain": {"type": "string", "description": "What one row means."},
+        "keywords": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "rights": {
+      "type": "object",
+      "required": ["license", "redistribution"],
+      "additionalProperties": false,
+      "properties": {
+        "license": {"type": "string", "minLength": 1},
+        "license_url": {"type": "string"},
+        "redistribution": {
+          "enum": ["allowed", "restricted", "prohibited", "unknown"],
+          "description": "Only `allowed` permits export or materialize without --private."
+        },
+        "redistribute_to": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "description": "Who may receive the data when redistribution is restricted."
+        },
+        "attribution": {"type": "string"},
+        "allowed_uses": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "prohibited_uses": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "notes": {"type": "string"}
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["format", "editions"],
+      "additionalProperties": false,
+      "properties": {
+        "format": {"enum": ["csv", "tsv", "jsonl"]},
+        "encoding": {"type": "string", "minLength": 1},
+        "delimiter": {"type": "string", "minLength": 1, "maxLength": 1},
+        "skip_rows": {"type": "integer", "minimum": 0},
+        "editions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/edition"}
+        }
+      }
+    },
+    "shape": {
+      "type": "object",
+      "required": ["fields"],
+      "additionalProperties": false,
+      "properties": {
+        "key": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "thousands": {"type": "string", "minLength": 1, "maxLength": 1},
+        "allow_parse_failures": {"type": "boolean"},
+        "missing": {"$ref": "#/$defs/missing"},
+        "filters": {"type": "array", "items": {"$ref": "#/$defs/filter"}},
+        "fields": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/field"}}
+      }
+    },
+    "issues": {"type": "array", "items": {"$ref": "#/$defs/issue"}}
+  },
+  "$defs": {
+    "edition": {
+      "type": "object",
+      "required": ["label", "url"],
+      "additionalProperties": false,
+      "properties": {
+        "label": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"},
+        "url": {
+          "type": "string",
+          "minLength": 1,
+          "description": "http(s) or file URL; a bare path is resolved against the spec file's directory."
+        },
+        "published": {"type": "string"},
+        "notes": {"type": "string"}
+      }
+    },
+    "missing": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Literal tokens (compared after trimming whitespace) that mean a value is absent, by reason.",
+      "properties": {
+        "suppressed": {"type": "array", "items": {"type": "string"}},
+        "not_collected": {"type": "array", "items": {"type": "string"}},
+        "not_applicable": {"type": "array", "items": {"type": "string"}},
+        "unknown": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "filter": {
+      "type": "object",
+      "required": ["field", "op", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "field": {"type": "string"},
+        "op": {"enum": ["eq", "ne", "in", "not_in"]},
+        "value": {
+          "anyOf": [{"type": "string"}, {"type": "array", "items": {"type": "string"}}]
+        }
+      }
+    },
+    "field": {
+      "type": "object",
+      "required": ["name", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"type": "string", "pattern": "^[a-z_][a-z0-9_]{0,62}$"},
+        "source": {
+          "anyOf": [
+            {"type": "string", "minLength": 1},
+            {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+          ],
+          "description": "Source column name, or alternatives tried in order (for headers renamed between editions)."
+        },
+        "derive": {"enum": ["edition"], "description": "Take the value from the edition label."},
+        "type": {"enum": ["string", "integer", "number", "boolean", "date"]},
+        "format": {"type": "string", "description": "strptime format for dates that are not ISO 8601."},
+        "title": {"type": "string"},
+        "unit": {"type": "string"},
+        "description": {"type": "string"},
+        "missing": {"$ref": "#/$defs/missing"}
+      }
+    },
+    "issue": {
+      "type": "object",
+      "required": ["id", "title", "effect"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,79}$"},
+        "title": {"type": "string", "minLength": 1},
+        "severity": {"enum": ["info", "caution", "warning"]},
+        "effect": {"type": "string", "minLength": 1, "description": "What is wrong or surprising, and what it does to the numbers."},
+        "misuse": {"type": "string", "description": "The mistake this invites."},
+        "instead": {"type": "string", "description": "What to do instead."},
+        "fields": {"type": "array", "items": {"type": "string"}},
+        "editions": {"type": "array", "items": {"type": "string"}},
+        "publisher_quote": {"type": "string", "description": "The publisher's own words, verbatim."},
+        "quote_source": {"type": "string"},
+        "quote_date": {"type": "string"},
+        "recorded": {"type": "string", "description": "Date the issue was recorded."}
+      }
+    }
+  }
+}

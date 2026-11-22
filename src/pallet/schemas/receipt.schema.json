@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:pallet:schema:receipt:1",
+  "title": "pallet capture receipt",
+  "description": "One retrieval of one URL. Receipts are appended, never edited. Identical bytes captured twice share one raw object and have two receipts.",
+  "type": "object",
+  "required": [
+    "pallet_receipt", "receipt_id", "dataset_id", "role", "edition", "url", "final_url",
+    "retrieved_at", "http_status", "headers", "bytes", "sha256", "stored_as", "new_object", "tool"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "pallet_receipt": {"const": 1},
+    "receipt_id": {"type": "string", "pattern": "^rcpt-[0-9a-f]{16}$"},
+    "dataset_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,79}$"},
+    "role": {"enum": ["edition", "index", "adopt"]},
+    "edition": {"type": ["string", "null"]},
+    "url": {"type": "string", "minLength": 1},
+    "final_url": {"type": "string", "minLength": 1},
+    "retrieved_at": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"},
+    "http_status": {"type": "integer", "minimum": 100},
+    "headers": {
+      "type": "object",
+      "description": "The response headers that bear on identity: type, length, dates, validators.",
+      "additionalProperties": {"type": "string"}
+    },
+    "bytes": {"type": "integer", "minimum": 0},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "stored_as": {"type": "string", "pattern": "^raw/[0-9a-f]{64}/[^/]+$"},
+    "new_object": {"type": "boolean", "description": "False when these exact bytes were already in custody."},
+    "tool": {"type": "string", "pattern": "^pallet/"}
+  }
+}
