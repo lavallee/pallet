@@ -1,0 +1,6 @@
+District,District Code,Population,ED Visits (primary diagnosis),Rate per 10000,Cooling Centers
+North Ridge,NR,"18,250",41,22.5,3
+Riverside,RS,"24,900",67,26.9,4
+Old Mill,OM,"6,120",*,*,1
+Bayside,BY,"11,480",29,25.3,NC
+Lakeshore,LK,N/A,N/A,N/A,N/A

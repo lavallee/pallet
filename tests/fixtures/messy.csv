@@ -1,0 +1,10 @@
+﻿Table 3. Widgets by county, 2024
+
+County Name , FIPS,Widgets (count),Share %,Survey Date,Notes
+Alpha,001,"1,204",12.5,2024-03-01,ok
+Beta,003,*,*,2024-03-02,
+Gamma,005,<5,N/A,2024-03-02,small
+Delta,007,88,0.8,2024-03-04,
+Epsilon,009,NA,..,2024-03-05,late
+Zeta,011,0,0,2024-03-05,
+

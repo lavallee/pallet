@@ -1,0 +1,137 @@
+# A worked example. The publisher, the place, and every number are invented.
+# Paths without a scheme are resolved against this file's directory, so the
+# example runs offline from a checkout. A real spec would use https:// URLs.
+
+[pallet]
+spec = 1
+
+[dataset]
+id = "heat-visits"
+title = "Heat-related emergency department visits by district (fictional)"
+description = """Annual counts and rates of emergency department visits for heat-related \
+illness in the districts of Example County, as published in the county health \
+department's yearly report. Synthetic data for the pallet example."""
+publisher = "Example County Department of Health (fictional)"
+index_url = "publisher/index.html"
+cadence = "annual, each June"
+geography = "County district, identified by a two-letter district code"
+time_basis = "Calendar year of the visits; the edition label is that year"
+grain = "One row per district per year"
+keywords = ["health", "heat", "example"]
+
+[rights]
+license = "CC0-1.0"
+license_url = "https://creativecommons.org/publicdomain/zero/1.0/"
+redistribution = "allowed"
+attribution = "Example County Department of Health (fictional)"
+allowed_uses = ["Republish, chart, and analyse with or without credit."]
+prohibited_uses = [
+  "Do not present heat_visits as a count of people: one person can make several visits.",
+  "Do not read the change from 2023 to 2024 as a trend; the counting rule changed.",
+]
+
+[source]
+format = "csv"
+encoding = "utf-8"
+
+[[source.editions]]
+label = "2023"
+url = "publisher/2023.csv"
+published = "2023-06-01"
+
+[[source.editions]]
+label = "2024"
+url = "publisher/2024.csv"
+published = "2024-06-01"
+
+[shape]
+key = ["year", "district_code"]
+thousands = ","
+
+[shape.missing]
+suppressed = ["*"]
+not_collected = ["NC"]
+not_applicable = ["N/A"]
+
+[[shape.fields]]
+name = "year"
+derive = "edition"
+type = "integer"
+description = "Calendar year the visits took place."
+
+[[shape.fields]]
+name = "district"
+source = "District"
+type = "string"
+description = "District name as printed by the publisher."
+
+[[shape.fields]]
+name = "district_code"
+source = "District Code"
+type = "string"
+description = "The publisher's two-letter district code."
+
+[[shape.fields]]
+name = "population"
+source = "Population"
+type = "integer"
+unit = "residents"
+description = "Resident population used as the rate denominator."
+
+[[shape.fields]]
+name = "heat_visits"
+source = ["ED Visits (primary diagnosis)", "ED Visits (any diagnosis)"]
+type = "integer"
+unit = "visits"
+description = "Emergency department visits for heat-related illness. See the issue on the 2024 definition change."
+
+[[shape.fields]]
+name = "visit_rate"
+source = "Rate per 10000"
+type = "number"
+unit = "visits per 10,000 residents"
+description = "heat_visits divided by population, times 10,000, as computed by the publisher."
+
+[[shape.fields]]
+name = "cooling_centers"
+source = "Cooling Centers"
+type = "integer"
+unit = "sites"
+description = "Public cooling centres open in the district that summer."
+
+[[shape.fields]]
+name = "heat_alert_days"
+source = "Heat Alert Days"
+type = "integer"
+unit = "days"
+description = "Days with a heat alert in effect. First published in 2024."
+
+[[issues]]
+id = "visit-definition-2024"
+title = "The 2024 edition counts visits by a broader rule"
+severity = "warning"
+effect = """From 2024 a visit counts when heat-related illness is any listed diagnosis; \
+in 2023 it counted only as the primary diagnosis. 2024 counts and rates are higher \
+partly, perhaps mostly, because of the rule."""
+misuse = "Reporting the 2023-to-2024 rise in heat_visits or visit_rate as a rise in heat illness."
+instead = "Compare districts within one year, or say plainly that the counting rule changed."
+fields = ["heat_visits", "visit_rate"]
+editions = ["2024"]
+publisher_quote = "Beginning with the 2024 report, a visit is counted when heat-related illness appears in any diagnosis field."
+quote_source = "publisher/index.html"
+quote_date = "2024-06-01"
+recorded = "2026-11-22"
+
+[[issues]]
+id = "lakeshore-split-2024"
+title = "Lakeshore was split from Bayside in 2024"
+severity = "caution"
+effect = """Lakeshore has no 2023 figures (recorded as not_applicable), and Bayside's 2024 population and counts cover a smaller area than in 2023."""
+misuse = "Reading Bayside's 2024 population drop as people leaving."
+instead = "Add Lakeshore and Bayside together when comparing with 2023."
+fields = ["population", "heat_visits"]
+editions = ["2023", "2024"]
+publisher_quote = "Lakeshore district was formed in January 2024 from the eastern part of Bayside."
+quote_source = "publisher/index.html"
+quote_date = "2024-06-01"
+recorded = "2026-11-22"
