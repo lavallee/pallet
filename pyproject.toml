@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pallet-data"
+version = "0.1.0"
+description = "Acquire datasets with custody: capture raw bytes, shape documented tables, publish immutable releases consumers pin by hash."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Marc Lavallee" }]
+requires-python = ">=3.12"
+dependencies = []
+keywords = ["data", "provenance", "custody", "datasets", "frictionless", "journalism"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+
+[project.scripts]
+pallet = "pallet.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.6",
+    # Test-only: cross-checks that the shipped schemas are valid JSON Schema
+    # 2020-12 and that pallet's built-in validator agrees with a full one.
+    "jsonschema>=4.20",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pallet"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/pallet", "tests", "examples", "README.md", "CHANGELOG.md", "LICENSE", "AGENTS.md"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
